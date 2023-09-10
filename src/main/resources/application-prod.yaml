@@ -1,1 +1,22 @@
+spring:
+  config:
+    active:
+      on-profile: prod
 
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    url: jdbc:postgresql://<host>:<port>/<database-name>
+    username: <username>
+    password: <password>
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
