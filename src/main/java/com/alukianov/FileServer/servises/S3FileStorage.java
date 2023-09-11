@@ -1,9 +1,14 @@
 package com.alukianov.FileServer.servises;
 
 import com.alukianov.FileServer.models.FileData;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Optional;
+
 public class S3FileStorage implements FileStorageService{
+
     @Override
     public void uploadFile(MultipartFile file) {
 
@@ -15,7 +20,8 @@ public class S3FileStorage implements FileStorageService{
     }
 
     @Override
-    public void downloadFile(long id) {
+    public Resource downloadFile(long id) {
+        return null;
 
     }
 
@@ -25,12 +31,12 @@ public class S3FileStorage implements FileStorageService{
     }
 
     @Override
-    public void filesList() {
-
+    public List<FileData> filesList() {
+        return null;
     }
 
     @Override
-    public FileData fileData(long id) {
+    public Optional<FileData> fileData(long id) {
         return null;
     }
 }
