@@ -20,8 +20,19 @@ spring:
         format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
 
-application:
-  storage:
-    directory: <path>
+file-storage:
+  local:
+    directory: <local patch>
+  s3:
+    endpoint: <endpoint>
+    region: <region>
+    access-key: <access-key>
+    secret-key: <secret-key>
+    bucket-name: <bucket-name>
+

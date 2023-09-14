@@ -16,8 +16,9 @@ public class FileStorageController {
     private final LocalFileStorage fileStorage;
 
     @PostMapping
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
-        fileStorage.uploadFile(file);
+    public ResponseEntity<?> uploadFiles(@RequestParam("file") MultipartFile[] files,
+                                         @RequestParam(value = "path", required=false) String path) {
+        fileStorage.uploadMultipleFiles(files, path);
         return ResponseEntity.ok("upload");
     }
 

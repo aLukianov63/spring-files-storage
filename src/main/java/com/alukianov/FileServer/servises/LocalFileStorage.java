@@ -26,7 +26,7 @@ public class LocalFileStorage implements FileStorageService {
 
     private final FileDataRepository fileDataRepository;
 
-    @Value(value = "${application.storage.directory}")
+    @Value(value = "${file-storage.local.directory}")
     private String STORAGE_DIRECTORY;
 
     private Path STORAGE_PATH;
@@ -49,33 +49,44 @@ public class LocalFileStorage implements FileStorageService {
     }
 
     @Override
-    public void uploadFile(MultipartFile file) {
+    public void uploadFile(MultipartFile file, String folder) {
         Optional<String> fileExtension = getExtensionByStringHandling(file.getOriginalFilename());
+        Path path;
 
         if (fileExtension.isPresent()) {
             String uuidName = UUID.randomUUID() + "." + fileExtension.get();
             try {
-                Files.copy(file.getInputStream(), this.STORAGE_PATH.resolve(uuidName));
-            } catch (Exception e) {
-                if (e instanceof FileAlreadyExistsException) {
-                    throw new RuntimeException("A file of that name already exists.");
+
+                if (folder != null) {
+                    path = Paths.get(STORAGE_PATH.toString(), folder);
+                    Files.createDirectories(path);
                 }
+                else
+                {
+                    path = STORAGE_PATH;
+                }
+
+                Files.copy(file.getInputStream(), path.resolve(uuidName));
+                fileDataRepository.save(FileData.builder()
+                        .name(uuidName)
+                        .type(file.getContentType())
+                        .size(file.getSize())
+                        .filePath("\\" + uuidName)
+                        .createdAt(LocalDateTime.now())
+                        .extension(fileExtension.get())
+                        .build()
+                );
+            } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
             }
-            fileDataRepository.save(FileData.builder()
-                    .name(uuidName)
-                    .type(file.getContentType())
-                    .size(file.getSize())
-                    .filePath("\\" + uuidName)
-                    .createdAt(LocalDateTime.now())
-                    .build()
-            );
         }
     }
 
     @Override
-    public void uploadMultipleFiles(MultipartFile[] files) {
-        Arrays.stream(files).forEach(this::uploadFile);
+    public void uploadMultipleFiles(MultipartFile[] files, String folder) {
+        Arrays.stream(files).forEach(file -> {
+            uploadFile(file, folder);
+        });
     }
 
     @Override

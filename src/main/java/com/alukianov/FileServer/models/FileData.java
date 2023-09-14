@@ -23,6 +23,8 @@ public class FileData {
 
     private String name;
 
+    private String extension;
+
     private String type;
 
     private Long size;
