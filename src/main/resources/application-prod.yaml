@@ -28,7 +28,7 @@ spring:
 
 file-storage:
   local:
-    directory: <local patch>
+    directory: <local path>
   s3:
     endpoint: <endpoint>
     region: <region>

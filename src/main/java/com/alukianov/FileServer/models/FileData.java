@@ -34,6 +34,6 @@ public class FileData {
     private String filePath;
 
     @Column(name = "created_at")
-    @JsonProperty(value = "file_path")
+    @JsonProperty(value = "created_at")
     private LocalDateTime createdAt;
 }
