@@ -1,7 +1,7 @@
 package com.alukianov.FileServer.web;
 
 import com.alukianov.FileServer.models.Response;
-import com.alukianov.FileServer.servises.LocalFileStorage;
+import com.alukianov.FileServer.servises.S3FileStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -10,13 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 @RestController
-@RequestMapping(value = "/api/v1/local/files")
+@RequestMapping(value = "/api/v1/s3/files")
 @RequiredArgsConstructor
-public class LocalFileStorageController {
+public class S3FileStorageController {
 
-    private final LocalFileStorage fileStorage;
+    private final S3FileStorage fileStorage;
 
     @PostMapping
     public ResponseEntity<Response> uploadFiles(@RequestParam("files") MultipartFile[] files,
@@ -60,4 +59,5 @@ public class LocalFileStorageController {
                 .build()
         );
     }
+
 }

@@ -96,8 +96,6 @@ public class LocalFileStorage implements FileStorageService {
         } catch (MalformedURLException e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
-
-
     }
 
     @Override
