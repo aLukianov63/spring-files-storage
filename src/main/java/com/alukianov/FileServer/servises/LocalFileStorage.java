@@ -83,14 +83,12 @@ public class LocalFileStorage implements FileStorageService {
                 Resource resource = new UrlResource(fullPath.toUri());
 
                 if (resource.exists() || resource.isReadable()) {
-                    return  resource;
-                }
-                else {
+                    return resource;
+                } else {
                     throw new RuntimeException("Could not read the file!");
                 }
-            }
-            else {
-                throw new NoSuchElementException("File with id" + id + "does not exist");
+            } else {
+                throw new NoSuchElementException("File with id " + id + " does not exist");
             }
 
         } catch (MalformedURLException e) {
@@ -107,13 +105,11 @@ public class LocalFileStorage implements FileStorageService {
 
             if (file.delete()) {
                 fileDataRepository.delete(fileData.get());
-            }
-            else {
+            } else {
                 throw new RuntimeException("Could not delete the file!");
             }
-        }
-        else {
-            throw new NoSuchElementException("File with id" + id + "does not exist");
+        } else {
+            throw new NoSuchElementException("File with id " + id + " does not exist");
         }
     }
 

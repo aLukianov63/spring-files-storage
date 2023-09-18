@@ -24,6 +24,7 @@ public class S3FileStorageController {
                                                         defaultValue = "") String path) {
         fileStorage.uploadMultipleFiles(files, path);
         return ResponseEntity.ok(Response.builder()
+                .status(200)
                 .message("Files successfully uploaded!")
                 .payload(null)
                 .build()
@@ -33,6 +34,7 @@ public class S3FileStorageController {
     @GetMapping
     public ResponseEntity<Response> getAllFilesData() {
         return ResponseEntity.ok(Response.builder()
+                .status(200)
                 .message("Files list")
                 .payload(fileStorage.filesList())
                 .build()
@@ -54,6 +56,7 @@ public class S3FileStorageController {
     public ResponseEntity<Response> deleteFile(@PathVariable Long id) {
         fileStorage.deleteFile(id);
         return ResponseEntity.ok(Response.builder()
+                .status(200)
                 .message("File with id " + id + " deleted!")
                 .payload(null)
                 .build()

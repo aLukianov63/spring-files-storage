@@ -25,11 +25,9 @@ import java.util.*;
 public class S3FileStorage implements FileStorageService {
 
     private final AmazonS3 amazonS3Client;
-
+    private final FileDataRepository fileDataRepository;
     @Value("${file-storage.s3.bucket-name}")
     private String bucketName;
-
-    private final FileDataRepository fileDataRepository;
 
     @Override
     public void uploadFile(MultipartFile file, String path) {
@@ -68,7 +66,7 @@ public class S3FileStorage implements FileStorageService {
     }
 
     @Override
-    public Resource downloadFile(long id)  {
+    public Resource downloadFile(long id) {
         Optional<FileData> fileData = fileData(id);
 
         if (fileData.isPresent()) {
@@ -89,9 +87,8 @@ public class S3FileStorage implements FileStorageService {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-        else {
-            throw new NoSuchElementException("File with id" + id + "does not exist");
+        } else {
+            throw new NoSuchElementException("File with id " + id + " does not exist");
         }
     }
 
@@ -102,9 +99,8 @@ public class S3FileStorage implements FileStorageService {
         if (fileData.isPresent()) {
             amazonS3Client.deleteObject(bucketName, fileData.get().getName());
             fileDataRepository.deleteById(id);
-        }
-        else {
-            throw new NoSuchElementException("File with id" + id + "does not exist");
+        } else {
+            throw new NoSuchElementException("File with id " + id + " does not exist");
         }
     }
 
