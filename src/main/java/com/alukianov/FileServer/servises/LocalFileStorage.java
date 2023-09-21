@@ -26,7 +26,7 @@ public class LocalFileStorage implements FileStorageService {
     private final FileDataRepository fileDataRepository;
 
     @Value(value = "${file-storage.local.directory}")
-    private String STORAGE_DIRECTORY;
+    public String STORAGE_DIRECTORY;
 
     private Path STORAGE_PATH;
 
