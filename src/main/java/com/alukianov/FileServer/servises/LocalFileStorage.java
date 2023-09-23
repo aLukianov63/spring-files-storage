@@ -64,6 +64,7 @@ public class LocalFileStorage implements FileStorageService {
                     .build()
             );
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
