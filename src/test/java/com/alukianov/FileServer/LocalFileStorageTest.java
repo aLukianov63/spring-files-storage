@@ -4,6 +4,8 @@ import com.alukianov.FileServer.models.FileData;
 import com.alukianov.FileServer.repositories.FileDataRepository;
 import com.alukianov.FileServer.servises.LocalFileStorage;
 import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,84 +13,108 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LocalFileStorageTest {
 
+    public static final String TEMP_DIRECTORY = System.getProperty("user.dir") + "\\" + "test-data";
+
     @InjectMocks
-    private LocalFileStorage fileStorage;
+    private LocalFileStorage storage;
 
     @Mock
-    private FileDataRepository fileDataRepository;
+    private FileDataRepository repository;
 
     @BeforeEach
     public void init() {
-        fileStorage.STORAGE_DIRECTORY = "D:\\development\\storage\\";
-        fileStorage.init();
+        storage.STORAGE_DIRECTORY = TEMP_DIRECTORY;
+        storage.init();
     }
 
+    @AfterAll
+    @SneakyThrows
+    static void cleanup()  {
+        FileUtils.deleteDirectory(new File(TEMP_DIRECTORY));
+    }
 
     @Test
     @SneakyThrows
     public void testUploadFile() {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.getOriginalFilename()).thenReturn("testfile.txt");
-        when(mockFile.getContentType()).thenReturn("text/plain");
-        when(mockFile.getSize()).thenReturn(100L);
-        InputStream inputStream = new ByteArrayInputStream("test file data".getBytes());
-        when(mockFile.getInputStream()).thenReturn(inputStream);
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Test file".getBytes());
+        String subPath = "/subfolder";
 
-        assertDoesNotThrow(() -> fileStorage.uploadFile(mockFile, ""));
+        assertDoesNotThrow(() -> storage.uploadFile(file, ""));
+        assertDoesNotThrow(() -> storage.uploadFile(file, subPath));
+
+        verify(repository, times(2)).save(any());
     }
 
     @Test
-    public void testDownloadFile() {
-        long fileId = 1;
+    void testUploadAndDownloadFile() throws IOException {
+        String content = "Test file content";
+        String fileName = "test-file-" + UUID.randomUUID() + ".txt";
+        Path tempFile = Files.createTempFile("temp-file", ".txt");
+        Files.write(tempFile, content.getBytes());
+
+        Files.move(tempFile, Path.of(TEMP_DIRECTORY, fileName), StandardCopyOption.REPLACE_EXISTING);
+
         FileData fileData = new FileData();
-        fileData.setId(fileId);
-        fileData.setFilePath("testfile.txt");
+        fileData.setFilePath(fileName);
 
-        when(fileDataRepository.findById(fileId)).thenReturn(Optional.of(fileData));
+        when(repository.findById(1L)).thenReturn(Optional.of(fileData));
 
-        Resource resource = fileStorage.downloadFile(fileId);
-        assertNotNull(resource);
+        MockMultipartFile file = new MockMultipartFile("file", fileName, "text/plain", content.getBytes());
+        storage.uploadFile(file, "");
 
-        try {
-            assertTrue(resource.getFile().exists());
-            assertTrue(resource.getFile().isFile());
-        } catch (IOException e) {
-            fail("IOException occurred: " + e.getMessage());
-        }
+        Resource downloadedFile = storage.downloadFile(1L);
+
+        assertNotNull(downloadedFile);
+        byte[] downloadedBytes = new byte[downloadedFile.getInputStream().available()];
+        downloadedFile.getInputStream().read(downloadedBytes);
+        String downloadedContent = new String(downloadedBytes);
+        assertEquals(content, downloadedContent);
     }
 
     @Test
+    @SneakyThrows
     public void testDeleteFile() {
-        long fileId = 1;
+        String content = "Test file content";
+        String fileName = "test-file-" + UUID.randomUUID() + ".txt";
+        Path tempFile = Files.createTempFile("temp-file", ".txt");
+        Files.write(tempFile, content.getBytes());
+
+        Files.move(tempFile, Path.of(storage.STORAGE_DIRECTORY, fileName), StandardCopyOption.REPLACE_EXISTING);
+
         FileData fileData = new FileData();
-        fileData.setId(fileId);
-        fileData.setFilePath("/testfile1.txt");
+        fileData.setFilePath("\\" + fileName);
 
-        when(fileDataRepository.findById(fileId)).thenReturn(Optional.of(fileData));
+        when(repository.findById(1L)).thenReturn(Optional.of(fileData));
 
-        assertDoesNotThrow(() -> fileStorage.deleteFile(fileId));
+        storage.deleteFile(1L);
+
+        assertFalse(Files.exists(Path.of(storage.STORAGE_DIRECTORY, fileName)));
+        verify(repository, times(1)).delete(fileData);
     }
 
     @Test
     public void testFilesList() {
-        when(fileDataRepository.findAll()).thenReturn(Collections.emptyList());
-
-        assertEquals(0, fileStorage.filesList().size());
+        when(repository.findAll()).thenReturn(List.of(new FileData(), new FileData()));
+        List<FileData> fileList = storage.filesList();
+        assertNotNull(fileList);
+        assertEquals(2, fileList.size());
     }
 
     @Test
@@ -97,11 +123,12 @@ public class LocalFileStorageTest {
         FileData fileData = new FileData();
         fileData.setId(fileId);
 
-        when(fileDataRepository.findById(fileId)).thenReturn(Optional.of(fileData));
+        when(repository.findById(fileId)).thenReturn(Optional.of(fileData));
 
-        Optional<FileData> retrievedFileData = fileStorage.fileData(fileId);
+        Optional<FileData> retrievedFileData = storage.fileData(fileId);
         assertTrue(retrievedFileData.isPresent());
         assertEquals(fileId, retrievedFileData.get().getId());
     }
+
 }
 
