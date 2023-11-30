@@ -36,3 +36,6 @@ file-storage:
     secret-key: <secret-key>
     bucket-name: <bucket-name>
 
+openapi:
+  dev-url: http://localhost:8080
+
