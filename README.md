@@ -20,6 +20,12 @@ git clone https://github.com/aLukianov63/spring-files-storage.git
 * Apache Commons IO
 * Lombok
 
+## ⚗️ OpenAPI
+
+Open Swagger ui page at `http://localhost:8080/swagger-ui/index.html`
+
+![img.png](swagger.png)
+
 ## 🛠️ Configuration
 
 ```yaml
